@@ -2,7 +2,6 @@ package rc
 
 import (
 	"errors"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,5 +30,15 @@ func updateNotice(ctx *gin.Context, notice *Notice) error {
 
 func fetchNotice(ctx *gin.Context, nid string, notice *Notice) error {
 	tx := db.WithContext(ctx).Where("id = ?", nid).First(notice)
+	return tx.Error
+}
+
+func subscribeNotice(ctx *gin.Context, subscription *Subscription) error {
+	tx := db.WithContext(ctx).Create(subscription)
+	return tx.Error
+}
+
+func getSubscriptions(ctx *gin.Context, subscriptions *[]Subscription) error {
+	tx := db.WithContext(ctx).Preload("Keys").Find(subscriptions)
 	return tx.Error
 }

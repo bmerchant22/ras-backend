@@ -33,7 +33,7 @@ func openConnection() {
 
 	err = db.AutoMigrate(&RecruitmentCycle{}, &RecruitmentCycleQuestion{},
 		&RecruitmentCycleQuestionsAnswer{}, &CompanyRecruitmentCycle{}, &Notice{},
-		&StudentRecruitmentCycle{}, &StudentRecruitmentCycleResume{})
+		&StudentRecruitmentCycle{}, &StudentRecruitmentCycleResume{}, &Subscription{}, &SubscriptionKeys{})
 	if err != nil {
 		logrus.Fatal("Failed to migrate cycle database: ", err)
 		panic(err)

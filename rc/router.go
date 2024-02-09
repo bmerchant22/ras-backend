@@ -54,6 +54,9 @@ func AdminRouter(mail_channel chan mail.Mail, r *gin.Engine) {
 
 func StudentRouter(r *gin.Engine) {
 	r.GET("/api/student/rc", getStudentRCHandler)
+	r.POST("/api/student/subscribe", subscribeNotificationHandler)
+	r.POST("/api/student/send-notif", sendNotificationHandler)
+	r.GET("/api/student/subs", getAllSubscriptions)
 	r.GET("/api/student/rc/:rid", studentWhoamiHandler)
 	student := r.Group("/api/student/rc/:rid")
 	student.Use(ensureActiveStudent())
@@ -72,9 +75,17 @@ func CompanyRouter(r *gin.Engine) {
 	r.GET("/api/company/whoami", companyWhoamiHandler)
 	company := r.Group("/api/company/rc")
 	{
-		company.GET("", getCompanyRCHandler)                    // get registered rc
-		company.GET("/all", getAllRCHandlerForCompany)          // get all rc
+		company.GET("", getCompanyRCHandler)                   // get registered rc
+		company.GET("/all", getAllRCHandlerForCompany)         // get all rc
 		company.POST("/:rid/enrollment", enrollCompanyHandler) // enroll a company to a rc
 		company.GET("/:rid/hr", getCompanyRCHRHandler)
 	}
 }
+
+//func NotificationRouter(r *gin.Engine) {
+//	notif := r.Group("/api/notif")
+//	{
+//		notif.POST("/send-notifications", sendNotificationHandler)
+//		notif.POST("/subscribe", subscribeNotificationHandler)
+//	}
+//}

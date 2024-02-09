@@ -109,3 +109,16 @@ type StudentRecruitmentCycleResume struct {
 	Verified                  sql.NullBool            `json:"verified" gorm:"default:NULL"`
 	ActionTakenBy             string                  `json:"action_taken_by"`
 }
+
+type SubscriptionKeys struct {
+	ID     uint   `gorm:"primaryKey"`
+	P256dh string `json:"p256dh"`
+	Auth   string `json:"auth"`
+}
+
+type Subscription struct {
+	gorm.Model
+	Endpoint string           `json:"endpoint"`
+	KeysID   uint             // Foreign key for SubscriptionKeys
+	Keys     SubscriptionKeys `gorm:"foreignKey:KeysID"`
+}
