@@ -11,7 +11,7 @@ func getApplicationCountHandler(ctx *gin.Context) {
 	var roleCount int
 	var recruitmentCount int
 
-	rid, err := util.ParseUint(ctx.Param("rid"))
+	rid, err := util.ParseUint(ctx.Param("rcId"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

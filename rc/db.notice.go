@@ -42,3 +42,14 @@ func getSubscriptions(ctx *gin.Context, subscriptions *[]Subscription) error {
 	tx := db.WithContext(ctx).Preload("Keys").Find(subscriptions)
 	return tx.Error
 }
+
+func getDeviceNumberForUser(ctx *gin.Context, student *StudentRecruitmentCycle, count int64) error {
+	tx := db.WithContext(ctx).Model(&Subscription{}).
+	Joins("JOIN student_recruitment_cycles ON subscriptions.notif_sub_key = student_recruitment_cycles.id").Where("student_recruitment_cycles.id = ?", student.ID).Count(&count)
+	return tx.Error
+}
+
+func deleteOldestSubscription(ctx *gin.Context, student *StudentRecruitmentCycle) error {
+	tx := db.WithContext(ctx).Where("notif_sub_key = ?", student.ID).Order("created_at").Limit(1).Delete(&Subscription{})
+	return tx.Error
+}

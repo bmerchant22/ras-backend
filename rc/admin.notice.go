@@ -2,7 +2,6 @@ package rc
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/SherClockHolmes/webpush-go"
 	"net/http"
 	"time"
@@ -50,19 +49,19 @@ func postNoticeHandler(ctx *gin.Context) {
 	if err := getSubscriptions(ctx, &subscriptions); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
-	start := time.Now()
 
-	for _, sub := range subscriptions {
-		subData, _ := json.Marshal(sub)
-		s := webpush.Subscription{}
-		json.Unmarshal(subData, &s)
-		go webpush.SendNotification([]byte(notice.Title), &s, &webpush.Options{
-			VAPIDPublicKey:  vapidPublicKey,
-			VAPIDPrivateKey: vapidPrivateKey,
-			TTL:             30,
-		})
-	}
-	fmt.Println("This is the total time taken : ", time.Since(start).Seconds())
+	go func() {
+		for _, sub := range subscriptions {
+			subData, _ := json.Marshal(sub)
+			s := webpush.Subscription{}
+			json.Unmarshal(subData, &s)
+			go webpush.SendNotification([]byte(notice.Title), &s, &webpush.Options{
+				VAPIDPublicKey:  vapidPublicKey,
+				VAPIDPrivateKey: vapidPrivateKey,
+				TTL:             30,
+			})
+		}
+	}()
 	ctx.JSON(http.StatusOK, gin.H{"status": "notice created", "subscriptions": subscriptions})
 }
 

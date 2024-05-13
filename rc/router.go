@@ -54,14 +54,12 @@ func AdminRouter(mail_channel chan mail.Mail, r *gin.Engine) {
 
 func StudentRouter(r *gin.Engine) {
 	r.GET("/api/student/rc", getStudentRCHandler)
-	r.POST("/api/student/subscribe", subscribeNotificationHandler)
-	r.POST("/api/student/send-notif", sendNotificationHandler)
-	r.GET("/api/student/subs", getAllSubscriptions)
 	r.GET("/api/student/rc/:rid", studentWhoamiHandler)
 	student := r.Group("/api/student/rc/:rid")
 	student.Use(ensureActiveStudent())
 	{
 		student.GET("/notice", getAllNoticesForStudentHandler)
+		student.POST("/subscribe", subscribeNotificationHandler)
 
 		student.GET("/enrollment", getStudentEnrollmentHandler)
 		student.POST("/enrollment/:qid/answer", postEnrollmentAnswerHandler)
@@ -81,11 +79,3 @@ func CompanyRouter(r *gin.Engine) {
 		company.GET("/:rid/hr", getCompanyRCHRHandler)
 	}
 }
-
-//func NotificationRouter(r *gin.Engine) {
-//	notif := r.Group("/api/notif")
-//	{
-//		notif.POST("/send-notifications", sendNotificationHandler)
-//		notif.POST("/subscribe", subscribeNotificationHandler)
-//	}
-//}

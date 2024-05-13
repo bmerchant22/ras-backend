@@ -22,7 +22,6 @@ func studentServer(mail_channel chan mail.Mail) *http.Server {
 
 	student.StudentRouter(engine)
 	rc.StudentRouter(engine)
-	//rc.NotificationRouter(engine)
 	application.StudentRouter(mail_channel, engine)
 
 	server := &http.Server{

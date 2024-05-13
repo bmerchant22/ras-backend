@@ -1,44 +1,45 @@
 package rc
 
 import (
-	"encoding/json"
-	"github.com/SherClockHolmes/webpush-go"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"github.com/spo-iitk/ras-backend/middleware"
+	"github.com/spo-iitk/ras-backend/util"
 )
 
-const (
-	subscription    = `{"endpoint":"https://fcm.googleapis.com/fcm/send/e2RG-M7Tf74:APA91bFYoDpd--uoErVmSaI8b0Pc4ywplrfER2BHFuJ2eGHPcEkXp54jzqIowMCyECJl7oi7qyXT1rk2dpXwdLlDuFt1XfvyodbDKiY2JlFxa0xk5GUohO37rH1IlyIL9ixZd4siPR1e","expirationTime":null,"keys":{"p256dh":"BDjj-Ti1Hw80I5H3THnxgKRj1Lqn6oSGleCZNGRRDjdRKhfsFZUJee7Nypo8KT_O9CTjSQVZv5zTwjPR1sVxO5w","auth":"sAtl5Hv2nqCVmrk1P22FOw"}}`
-	vapidPublicKey  = "BD02hnS3Y1WU--EHZ8LTqs19uUf2Jh3_rV-ROU55d0lQkev8P-2g_EZEbFcIN32eiuYRtrSNS9d94sBnlNPvjkw"
-	vapidPrivateKey = "Qo4vPl8D77SL4NSXKR6o4QnoV18P79WuFOJVCA9GEjw"
-)
-
-// For testing
-func sendNotificationHandler(ctx *gin.Context) {
-	s := &webpush.Subscription{}
-	json.Unmarshal([]byte(subscription), s)
-
-	// Send Notification
-	resp, err := webpush.SendNotification([]byte("Take my penis"), s, &webpush.Options{
-		VAPIDPublicKey:  vapidPublicKey,
-		VAPIDPrivateKey: vapidPrivateKey,
-		TTL:             30,
-	})
-	if err != nil {
-		// TODO: Handle error
-	}
-	defer resp.Body.Close()
-	//ctx.JSON(http.StatusOK, gin.H{"subscriptions": subscriptions})
-	ctx.JSON(http.StatusOK, gin.H{"Msg": "succ"})
-}
-
-func getAllSubscriptions(ctx *gin.Context) {
-	var s []Subscription
-	getSubscriptions(ctx, &s)
-	ctx.JSON(http.StatusOK, s)
-}
+var vapidPublicKey = viper.GetString("NOTIFICATION.VAPIDPUBLICKEY")
+var vapidPrivateKey = viper.GetString("NOTIFICATION.VAPIDPRIVATEKEY")
 
 func subscribeNotificationHandler(ctx *gin.Context) {
+	rid, err := util.ParseUint(ctx.Param("rid"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": rid})
+		return
+	}
+
+	email := middleware.GetUserID(ctx)
+	var student StudentRecruitmentCycle
+
+	err = fetchStudentByEmailAndRC(ctx, email, rid, &student)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var count int64
+
+	if err := getDeviceNumberForUser(ctx, &student, count); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	if count >= 5 {
+		if err := deleteOldestSubscription(ctx, &student); err != nil {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+	}
+
 	var subscription Subscription
 
 	if err := ctx.ShouldBindJSON(&subscription); err != nil {

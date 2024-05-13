@@ -97,6 +97,7 @@ type StudentRecruitmentCycle struct {
 	IsFrozen                     bool                        `json:"is_frozen" gorm:"default:false"`
 	IsVerified                   bool                        `json:"is_verified" gorm:"default:false"`
 	Comment                      string                      `json:"comment"`
+	Subs                         Subscription                `gorm:"foreignKey:NotifSubKey" json:"-"`
 }
 
 type StudentRecruitmentCycleResume struct {
@@ -118,7 +119,7 @@ type SubscriptionKeys struct {
 
 type Subscription struct {
 	gorm.Model
-	Endpoint string           `json:"endpoint"`
-	KeysID   uint             // Foreign key for SubscriptionKeys
-	Keys     SubscriptionKeys `gorm:"foreignKey:KeysID"`
+	Endpoint    string `json:"endpoint"`
+	NotifSubKey uint             `gorm:"foreignKey:ID"`
+	Keys        SubscriptionKeys `gorm:"foreignKey:ID"`
 }
